@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@layer base {
+  :root {
+    --background: 260 25% 5%;
+    --foreground: 260 10% 90%;
+    --card: 260 25% 8%;
+    --card-foreground: 260 10% 85%;
+    --primary: 260 80% 58%;
+    --primary-foreground: 260 10% 95%;
+    --secondary: 260 20% 15%;
+    --secondary-foreground: 260 10% 80%;
+    --muted: 260 15% 12%;
+    --muted-foreground: 260 10% 60%;
+    --accent: 260 40% 50%;
+    --accent-foreground: 260 10% 95%;
+    --border: 260 20% 20%;
+    --ring: 260 80% 58%;
+  }
+
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+
+  body {
+    @apply bg-cosmic-950 text-white antialiased;
+    background: linear-gradient(135deg, #0f0229 0%, #1a0533 30%, #0a2e38 70%, #0f0229 100%);
+    min-height: 100vh;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-fortune-gold via-fortune-rose to-fortune-lavender;
+  }
+
+  .text-gradient-aurora {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-aurora-300 via-aurora-400 to-fortune-lavender;
+  }
+
+  .glass {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  }
+
+  .glass-hover {
+    @apply hover:bg-white/10 hover:border-white/20 transition-all duration-300;
+  }
+
+  .glow-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md;
+  }
+
+  .glow-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      transparent,
+      rgba(124, 58, 237, 0.1),
+      transparent 30%,
+      rgba(45, 212, 191, 0.1),
+      transparent 60%,
+      rgba(192, 132, 252, 0.1),
+      transparent
+    );
+    animation: rotate 8s linear infinite;
+  }
+
+  @keyframes rotate {
+    100% { transform: rotate(360deg); }
+  }
+
+  .glow-card-content {
+    @apply relative z-10 p-6;
+  }
+
+  .star-dot {
+    @apply absolute w-1 h-1 bg-white rounded-full;
+    animation: twinkle var(--duration) ease-in-out infinite;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Fortune map glow */
+  .map-pulse {
+    @apply absolute rounded-full animate-ping opacity-20;
+  }
+
+  /* Chat bubble */
+  .chat-bubble-user {
+    @apply ml-auto bg-gradient-to-r from-cosmic-500 to-cosmic-600 rounded-2xl rounded-br-sm px-4 py-3 max-w-[80%];
+  }
+  .chat-bubble-ai {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[80%];
+  }
+}
