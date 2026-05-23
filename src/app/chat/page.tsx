@@ -175,7 +175,12 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    try {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch {
+      // Fallback for environments where scrollIntoView is unavailable
+      messagesEndRef.current?.scrollIntoView(false);
+    }
   }, [messages]);
 
   const switchCharacter = (char: typeof characters[0]) => {

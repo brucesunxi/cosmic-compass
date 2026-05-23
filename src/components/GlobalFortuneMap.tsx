@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, memo } from "react";
 import { MapPin } from "lucide-react";
 
 interface RegionData {
@@ -12,7 +12,7 @@ interface RegionData {
   color: string;
 }
 
-const regions: RegionData[] = [
+const REGIONS: RegionData[] = [
   { name: "North America", x: 18, y: 30, energy: "high", topTheme: "Love & Career", color: "#FF6B9D" },
   { name: "Europe", x: 45, y: 25, energy: "medium", topTheme: "Self Discovery", color: "#C084FC" },
   { name: "Asia", x: 70, y: 30, energy: "high", topTheme: "Wealth & Family", color: "#FFD700" },
@@ -22,30 +22,66 @@ const regions: RegionData[] = [
   { name: "Australia", x: 82, y: 65, energy: "medium", topTheme: "Travel", color: "#4DD0E1" },
 ];
 
-export function GlobalFortuneMap() {
-  const [activeRegion, setActiveRegion] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+const energyColors: Record<string, string> = {
+  high: "bg-fortune-rose",
+  medium: "bg-fortune-lavender",
+  low: "bg-fortune-peach",
+};
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+const pulsColors: Record<string, string> = {
+  high: "shadow-fortune-rose/50 bg-fortune-rose",
+  medium: "shadow-fortune-lavender/50 bg-fortune-lavender",
+  low: "shadow-fortune-peach/50 bg-fortune-peach",
+};
 
-  if (!mounted) {
-    return (
-      <div className="glow-card h-80">
-        <div className="glow-card-content flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-cosmic-400 border-t-transparent rounded-full animate-spin" />
+function RegionDot({ region, activeRegion, onHover, onLeave }: {
+  region: RegionData;
+  activeRegion: string | null;
+  onHover: (name: string) => void;
+  onLeave: () => void;
+}) {
+  const isActive = activeRegion === region.name;
+
+  return (
+    <button
+      className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
+      style={{ left: `${region.x}%`, top: `${region.y}%` }}
+      onMouseEnter={() => onHover(region.name)}
+      onMouseLeave={onLeave}
+      aria-label={`${region.name}: ${region.topTheme} (${region.energy} energy)`}
+    >
+      <div
+        className={`absolute rounded-full animate-ping opacity-20 w-6 h-6 ${energyColors[region.energy]}`}
+        style={{ animationDuration: `${2 + Math.random() * 2}s` }}
+      />
+      <div
+        className={`relative w-4 h-4 rounded-full border-2 border-white/30 transition-all duration-300 ${
+          pulsColors[region.energy]
+        } ${isActive ? "scale-150" : "scale-100"}`}
+      />
+      <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all duration-300 ${
+        isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
+      }`}>
+        <div className="bg-black/80 backdrop-blur-md rounded-lg px-2 py-1 text-xs border border-white/10">
+          <p className="text-white font-medium">{region.name}</p>
+          <p className="text-white/50">{region.topTheme}</p>
         </div>
       </div>
-    );
-  }
+    </button>
+  );
+}
+
+const RegionDotMemo = memo(RegionDot);
+
+export function GlobalFortuneMap() {
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
 
   return (
     <div className="glow-card">
       <div className="glow-card-content">
         <div className="relative w-full aspect-[2/1] bg-black/30 rounded-xl overflow-hidden">
           {/* Grid background */}
-          <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 opacity-10" aria-hidden="true">
             <div className="w-full h-full" style={{
               backgroundImage: `
                 linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
@@ -55,79 +91,15 @@ export function GlobalFortuneMap() {
             }} />
           </div>
 
-          {/* Energy flow lines */}
-          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 70">
-            <defs>
-              <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#7c3aed" stopOpacity="0" />
-                <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {regions.map((r, i) => (
-              <circle
-                key={r.name}
-                cx={r.x}
-                cy={r.y}
-                r={3 + Math.random()}
-                fill="none"
-                stroke={r.color}
-                strokeWidth="0.3"
-                opacity="0.5"
-                className="animate-pulse-slow"
-                style={{ animationDelay: `${i * 0.5}s` }}
-              />
-            ))}
-            {/* Connecting lines */}
-            {regions.slice(0, -1).map((r, i) => (
-              <line
-                key={i}
-                x1={r.x}
-                y1={r.y}
-                x2={regions[i + 1].x}
-                y2={regions[i + 1].y}
-                stroke="url(#flowGrad)"
-                strokeWidth="0.5"
-                opacity="0.2"
-              />
-            ))}
-          </svg>
-
           {/* Region dots */}
-          {regions.map((region) => (
-            <button
+          {REGIONS.map((region) => (
+            <RegionDotMemo
               key={region.name}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
-              style={{ left: `${region.x}%`, top: `${region.y}%` }}
-              onMouseEnter={() => setActiveRegion(region.name)}
-              onMouseLeave={() => setActiveRegion(null)}
-            >
-              {/* Pulse ring */}
-              <div
-                className={`map-pulse w-6 h-6 ${
-                  region.energy === "high" ? "bg-fortune-rose" :
-                  region.energy === "medium" ? "bg-fortune-lavender" : "bg-fortune-peach"
-                }`}
-                style={{ animationDuration: `${2 + Math.random() * 2}s` }}
-              />
-              {/* Dot */}
-              <div
-                className={`relative w-4 h-4 rounded-full border-2 border-white/30 transition-all duration-300 ${
-                  region.energy === "high" ? "bg-fortune-rose shadow-lg shadow-fortune-rose/50" :
-                  region.energy === "medium" ? "bg-fortune-lavender shadow-lg shadow-fortune-lavender/50" :
-                  "bg-fortune-peach shadow-lg shadow-fortune-peach/50"
-                } ${activeRegion === region.name ? "scale-150" : "scale-100"}`}
-              />
-              {/* Label */}
-              <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all duration-300 ${
-                activeRegion === region.name ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-              }`}>
-                <div className="bg-black/80 backdrop-blur-md rounded-lg px-2 py-1 text-xs border border-white/10">
-                  <p className="text-white font-medium">{region.name}</p>
-                  <p className="text-white/50">{region.topTheme}</p>
-                </div>
-              </div>
-            </button>
+              region={region}
+              activeRegion={activeRegion}
+              onHover={setActiveRegion}
+              onLeave={() => setActiveRegion(null)}
+            />
           ))}
 
           {/* Tooltip */}
